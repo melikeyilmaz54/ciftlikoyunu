@@ -1,0 +1,270 @@
+#include <iostream>
+#include <string>
+using namespace std;
+
+class Kasa {
+private:
+    int bakiye;
+
+public:
+    Kasa(int baslangicPara) : bakiye(baslangicPara) {}
+
+    bool paraHarca(int miktar) {
+        if (bakiye >= miktar) {
+            bakiye -= miktar;
+            return true;
+        } else {
+            cout << "Yeterli para yok!" << endl;
+            return false;
+        }
+    }
+
+    void paraEkle(int miktar) {
+        bakiye += miktar;
+    }
+
+    void kasaDurumu() const {
+        cout << "Kasa Bakiyesi: " << bakiye << " TL" << endl;
+    }
+};
+
+class Urun {
+protected:
+    string tur;
+    int fiyat;
+
+public:
+    Urun(string t, int f) : tur(t), fiyat(f) {}
+
+    string getTur() const { return tur; }
+    int getFiyat() const { return fiyat; }
+};
+
+class Bugday : public Urun {
+public:
+    Bugday() : Urun("Bugday", 10) {}
+};
+
+class Misir : public Urun {
+public:
+    Misir() : Urun("Misir", 15) {}
+};
+
+class Patates : public Urun {
+public:
+    Patates() : Urun("Patates", 20) {}
+};
+
+class Tarla {
+private:
+    int bugdaySayisi;
+    int misirSayisi;
+    int patatesSayisi;
+    Kasa& kasa;
+
+public:
+    Tarla(Kasa& k) : bugdaySayisi(0), misirSayisi(0), patatesSayisi(0), kasa(k) {}
+
+    void urunEk(const Urun& urun, int adet) {
+        int toplamFiyat = urun.getFiyat() * adet;
+        if (kasa.paraHarca(toplamFiyat)) {
+            if (urun.getTur() == "Bugday") bugdaySayisi += adet;
+            else if (urun.getTur() == "Misir") misirSayisi += adet;
+            else if (urun.getTur() == "Patates") patatesSayisi += adet;
+            cout << adet << " adet " << urun.getTur() << " alindi." << endl;
+        }
+    }
+
+    void urunSat(const Urun& urun, int adet) {
+        if (urun.getTur() == "Bugday" && bugdaySayisi >= adet) {
+            bugdaySayisi -= adet;
+            kasa.paraEkle(urun.getFiyat() * adet);
+            cout << adet << " adet " << urun.getTur() << " satildi." << endl;
+        } else if (urun.getTur() == "Misir" && misirSayisi >= adet) {
+            misirSayisi -= adet;
+            kasa.paraEkle(urun.getFiyat() * adet);
+            cout << adet << " adet " << urun.getTur() << " satildi." << endl;
+        } else if (urun.getTur() == "Patates" && patatesSayisi >= adet) {
+            patatesSayisi -= adet;
+            kasa.paraEkle(urun.getFiyat() * adet);
+            cout << adet << " adet " << urun.getTur() << " satildi." << endl;
+        } else {
+            cout << "Yeterli miktarda " << urun.getTur() << " yok!" << endl;
+        }
+    }
+
+    void durumKontrol() const {
+        cout << "\n--- Tarla Durumu ---\n";
+        cout << "Bugday Sayisi: " << bugdaySayisi << "\n";
+        cout << "Misir Sayisi: " << misirSayisi << "\n";
+        cout << "Patates Sayisi: " << patatesSayisi << "\n";
+    }
+};
+
+class Hayvan {
+protected:
+    string tur;
+    int fiyat;
+
+public:
+    Hayvan(string t, int f) : tur(t), fiyat(f) {}
+
+    string getTur() const { return tur; }
+    int getFiyat() const { return fiyat; }
+};
+
+class Koyun : public Hayvan {
+public:
+    Koyun() : Hayvan("Koyun", 40) {}
+};
+
+class Inek : public Hayvan {
+public:
+    Inek() : Hayvan("Inek", 50) {}
+};
+
+class Tavuk : public Hayvan {
+public:
+    Tavuk() : Hayvan("Tavuk", 30) {}
+};
+
+class Ciftlik {
+private:
+    int koyunSayisi;
+    int inekSayisi;
+    int tavukSayisi;
+    Kasa& kasa;
+
+public:
+    Ciftlik(Kasa& k) : koyunSayisi(0), inekSayisi(0), tavukSayisi(0), kasa(k) {}
+
+    void hayvanAl(const Hayvan& hayvan, int adet) {
+        int toplamFiyat = hayvan.getFiyat() * adet;
+        if (kasa.paraHarca(toplamFiyat)) {
+            if (hayvan.getTur() == "Koyun") koyunSayisi += adet;
+            else if (hayvan.getTur() == "Inek") inekSayisi += adet;
+            else if (hayvan.getTur() == "Tavuk") tavukSayisi += adet;
+            cout << adet << " adet " << hayvan.getTur() << " alindi." << endl;
+        }
+    }
+
+    void hayvanSat(const Hayvan& hayvan, int adet) {
+        if (hayvan.getTur() == "Koyun" && koyunSayisi >= adet) {
+            koyunSayisi -= adet;
+            kasa.paraEkle(hayvan.getFiyat() * adet);
+            cout << adet << " adet " << hayvan.getTur() << " satildi." << endl;
+        } else if (hayvan.getTur() == "Inek" && inekSayisi >= adet) {
+            inekSayisi -= adet;
+            kasa.paraEkle(hayvan.getFiyat() * adet);
+            cout << adet << " adet " << hayvan.getTur() << " satildi." << endl;
+        } else if (hayvan.getTur() == "Tavuk" && tavukSayisi >= adet) {
+            tavukSayisi -= adet;
+            kasa.paraEkle(hayvan.getFiyat() * adet);
+            cout << adet << " adet " << hayvan.getTur() << " satildi." << endl;
+        } else {
+            cout << "Yeterli miktarda " << hayvan.getTur() << " yok!" << endl;
+        }
+    }
+
+    void durumKontrol() const {
+        cout << "\n--- Ciftlik Durumu ---\n";
+        cout << "Koyun Sayisi: " << koyunSayisi << "\n";
+        cout << "Inek Sayisi: " << inekSayisi << "\n";
+        cout << "Tavuk Sayisi: " << tavukSayisi << "\n";
+    }
+};
+
+int menuGoster() {
+    cout << "\n--- Ana Menu ---\n";
+    cout << "1. Urun Ekle\n";
+    cout << "2. Urun Sat\n";
+    cout << "3. Hayvan Al\n";
+    cout << "4. Hayvan Sat\n";
+    cout << "5. Durum Kontrol\n";
+    cout << "6. Cikis\n";
+    cout << "Seciminiz: ";
+    int secim;
+    cin >> secim;
+    return secim;
+}
+
+int main() {
+    Kasa kasa(1000);
+    Tarla tarla(kasa);
+    Ciftlik ciftlik(kasa);
+    Bugday bugday;
+    Misir misir;
+    Patates patates;
+    Koyun koyun;
+    Inek inek;
+    Tavuk tavuk;
+
+    while (true) {
+        int secim = menuGoster();
+
+        switch (secim) {
+            case 1: {
+                cout << "Hangi urunu ekmek istiyorsunuz?\n1. Bugday\n2. Misir\n3. Patates\nSeciminiz: ";
+                int urunSecim;
+                cin >> urunSecim;
+                int miktar;
+                cout << "Miktar: ";
+                cin >> miktar;
+                if (urunSecim == 1) tarla.urunEk(bugday, miktar);
+                else if (urunSecim == 2) tarla.urunEk(misir, miktar);
+                else if (urunSecim == 3) tarla.urunEk(patates, miktar);
+                else cout << "Gecersiz secim!\n";
+                break;
+            }
+            case 2: {
+                cout << "Hangi urunu hasat etmek istiyorsunuz?\n1. Bugday\n2. Misir\n3. Patates\nSeciminiz: ";
+                int urunSecim;
+                cin >> urunSecim;
+                int miktar;
+                cout << "Miktar: ";
+                cin >> miktar;
+                if (urunSecim == 1) tarla.urunSat(bugday, miktar);
+                else if (urunSecim == 2) tarla.urunSat(misir, miktar);
+                else if (urunSecim == 3) tarla.urunSat(patates, miktar);
+                else cout << "Gecersiz secim!\n";
+                break;
+            }
+            case 3: {
+                cout << "Hangi hayvani almak istiyorsunuz?\n1. Koyun\n2. Inek\n3. Tavuk\nSeciminiz: ";
+                int hayvanSecim;
+                cin >> hayvanSecim;
+                int miktar;
+                cout << "Miktar: ";
+                cin >> miktar;
+                if (hayvanSecim == 1) ciftlik.hayvanAl(koyun, miktar);
+                else if (hayvanSecim == 2) ciftlik.hayvanAl(inek, miktar);
+                else if (hayvanSecim == 3) ciftlik.hayvanAl(tavuk, miktar);
+                else cout << "Gecersiz secim!\n";
+                break;
+            }
+            case 4: {
+                cout << "Hangi hayvani satmak istiyorsunuz?\n1. Koyun\n2. Inek\n3. Tavuk\nSeciminiz: ";
+                int hayvanSecim;
+                cin >> hayvanSecim;
+                int miktar;
+                cout << "Miktar: ";
+                cin >> miktar;
+                if (hayvanSecim == 1) ciftlik.hayvanSat(koyun, miktar);
+                else if (hayvanSecim == 2) ciftlik.hayvanSat(inek, miktar);
+                else if (hayvanSecim == 3) ciftlik.hayvanSat(tavuk, miktar);
+                else cout << "Gecersiz secim!\n";
+                break;
+            }
+            case 5:
+                tarla.durumKontrol();
+                ciftlik.durumKontrol();
+                kasa.kasaDurumu();
+                break;
+            case 6:
+                cout << "Oyundan cikiliyor...\n";
+                return 0;
+            default:
+                cout << "Gecersiz secim!\n";
+        }
+    }
+}
