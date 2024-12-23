@@ -5,7 +5,7 @@ using namespace std;
 class Kasa {
 private:
     int bakiye;
-
+h
 public:
     Kasa(int baslangicPara) : bakiye(baslangicPara) {}
 
