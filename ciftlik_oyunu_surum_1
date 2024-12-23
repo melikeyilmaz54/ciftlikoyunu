@@ -1,11 +1,29 @@
 #include <iostream>
 #include <string>
+#include <unordered_map>
 using namespace std;
+
+class Oyuncu {
+private:
+    string isim;
+    string sifre;
+
+public:
+    void setOyuncuBilgileri(const string& oyuncuIsmi, const string& oyuncuSifre) {
+        isim = oyuncuIsmi;
+        sifre = oyuncuSifre;
+        cout << "\n" << isim << " Ciftligine Hosgeldiniz!\n";
+    }
+
+    string getIsim() const {
+        return isim;
+    }
+};
 
 class Kasa {
 private:
     int bakiye;
-h
+
 public:
     Kasa(int baslangicPara) : bakiye(baslangicPara) {}
 
@@ -57,35 +75,36 @@ public:
 
 class Tarla {
 private:
-    int bugdaySayisi;
-    int misirSayisi;
-    int patatesSayisi;
+    unordered_map<string, int> ekilenUrunler;
+    unordered_map<string, int> hasatEdilenUrunler;
+    unordered_map<string, int> satilanUrunler;
     Kasa& kasa;
 
 public:
-    Tarla(Kasa& k) : bugdaySayisi(0), misirSayisi(0), patatesSayisi(0), kasa(k) {}
+    Tarla(Kasa& k) : kasa(k) {}
 
     void urunEk(const Urun& urun, int adet) {
         int toplamFiyat = urun.getFiyat() * adet;
         if (kasa.paraHarca(toplamFiyat)) {
-            if (urun.getTur() == "Bugday") bugdaySayisi += adet;
-            else if (urun.getTur() == "Misir") misirSayisi += adet;
-            else if (urun.getTur() == "Patates") patatesSayisi += adet;
-            cout << adet << " adet " << urun.getTur() << " alindi." << endl;
+            ekilenUrunler[urun.getTur()] += adet;
+            cout << adet << " adet " << urun.getTur() << " ekildi." << endl;
+        }
+    }
+
+    void urunHasat(const Urun& urun, int adet) {
+        if (ekilenUrunler[urun.getTur()] >= adet) {
+            ekilenUrunler[urun.getTur()] -= adet;
+            hasatEdilenUrunler[urun.getTur()] += adet;
+            cout << adet << " adet " << urun.getTur() << " hasat edildi." << endl;
+        } else {
+            cout << "Hasat icin yeterli miktarda " << urun.getTur() << " yok!" << endl;
         }
     }
 
     void urunSat(const Urun& urun, int adet) {
-        if (urun.getTur() == "Bugday" && bugdaySayisi >= adet) {
-            bugdaySayisi -= adet;
-            kasa.paraEkle(urun.getFiyat() * adet);
-            cout << adet << " adet " << urun.getTur() << " satildi." << endl;
-        } else if (urun.getTur() == "Misir" && misirSayisi >= adet) {
-            misirSayisi -= adet;
-            kasa.paraEkle(urun.getFiyat() * adet);
-            cout << adet << " adet " << urun.getTur() << " satildi." << endl;
-        } else if (urun.getTur() == "Patates" && patatesSayisi >= adet) {
-            patatesSayisi -= adet;
+        if (hasatEdilenUrunler[urun.getTur()] >= adet) {
+            hasatEdilenUrunler[urun.getTur()] -= adet;
+            satilanUrunler[urun.getTur()] += adet;
             kasa.paraEkle(urun.getFiyat() * adet);
             cout << adet << " adet " << urun.getTur() << " satildi." << endl;
         } else {
@@ -95,9 +114,20 @@ public:
 
     void durumKontrol() const {
         cout << "\n--- Tarla Durumu ---\n";
-        cout << "Bugday Sayisi: " << bugdaySayisi << "\n";
-        cout << "Misir Sayisi: " << misirSayisi << "\n";
-        cout << "Patates Sayisi: " << patatesSayisi << "\n";
+        cout << "\nEkilen Urunler:\n";
+        for (const auto& urun : ekilenUrunler) {
+            cout << urun.first << " Sayisi: " << urun.second << "\n";
+        }
+
+        cout << "\nHasat Edilen Urunler:\n";
+        for (const auto& urun : hasatEdilenUrunler) {
+            cout << urun.first << " Sayisi: " << urun.second << "\n";
+        }
+
+        cout << "\nSatilan Urunler:\n";
+        for (const auto& urun : satilanUrunler) {
+            cout << urun.first << " Sayisi: " << urun.second << "\n";
+        }
     }
 };
 
@@ -177,11 +207,12 @@ public:
 int menuGoster() {
     cout << "\n--- Ana Menu ---\n";
     cout << "1. Urun Ekle\n";
-    cout << "2. Urun Sat\n";
-    cout << "3. Hayvan Al\n";
-    cout << "4. Hayvan Sat\n";
-    cout << "5. Durum Kontrol\n";
-    cout << "6. Cikis\n";
+    cout << "2. Urun Hasat\n";
+    cout << "3. Urun Sat\n";
+    cout << "4. Hayvan Al\n";
+    cout << "5. Hayvan Sat\n";
+    cout << "6. Durum Kontrol\n";
+    cout << "7. Cikis\n";
     cout << "Seciminiz: ";
     int secim;
     cin >> secim;
@@ -189,7 +220,15 @@ int menuGoster() {
 }
 
 int main() {
-    Kasa kasa(1000);
+    Oyuncu oyuncu;
+    string isim, sifre;
+    cout << "Oyuncu ismi girin: ";
+    cin >> isim;
+    cout << "Sifre girin: ";
+    cin >> sifre;
+    oyuncu.setOyuncuBilgileri(isim, sifre);
+
+    Kasa kasa(10000);
     Tarla tarla(kasa);
     Ciftlik ciftlik(kasa);
     Bugday bugday;
@@ -223,13 +262,26 @@ int main() {
                 int miktar;
                 cout << "Miktar: ";
                 cin >> miktar;
+                if (urunSecim == 1) tarla.urunHasat(bugday, miktar);
+                else if (urunSecim == 2) tarla.urunHasat(misir, miktar);
+                else if (urunSecim == 3) tarla.urunHasat(patates, miktar);
+                else cout << "Gecersiz secim!\n";
+                break;
+            }
+            case 3: {
+                cout << "Hangi urunu satmak istiyorsunuz?\n1. Bugday\n2. Misir\n3. Patates\nSeciminiz: ";
+                int urunSecim;
+                cin >> urunSecim;
+                int miktar;
+                cout << "Miktar: ";
+                cin >> miktar;
                 if (urunSecim == 1) tarla.urunSat(bugday, miktar);
                 else if (urunSecim == 2) tarla.urunSat(misir, miktar);
                 else if (urunSecim == 3) tarla.urunSat(patates, miktar);
                 else cout << "Gecersiz secim!\n";
                 break;
             }
-            case 3: {
+            case 4: {
                 cout << "Hangi hayvani almak istiyorsunuz?\n1. Koyun\n2. Inek\n3. Tavuk\nSeciminiz: ";
                 int hayvanSecim;
                 cin >> hayvanSecim;
@@ -242,7 +294,7 @@ int main() {
                 else cout << "Gecersiz secim!\n";
                 break;
             }
-            case 4: {
+            case 5: {
                 cout << "Hangi hayvani satmak istiyorsunuz?\n1. Koyun\n2. Inek\n3. Tavuk\nSeciminiz: ";
                 int hayvanSecim;
                 cin >> hayvanSecim;
@@ -255,12 +307,12 @@ int main() {
                 else cout << "Gecersiz secim!\n";
                 break;
             }
-            case 5:
+            case 6:
                 tarla.durumKontrol();
                 ciftlik.durumKontrol();
                 kasa.kasaDurumu();
                 break;
-            case 6:
+            case 7:
                 cout << "Oyundan cikiliyor...\n";
                 return 0;
             default:
